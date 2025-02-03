@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matcha Latte Ratio Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2B3948;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #d4e157;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #4c8c4a;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .slider-container {
+            margin-top: 15px;
+        }
+        .slider-label {
+            font-size: 14px;
+            color: #4c8c4a;
+        }
+        .cups-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .cup-container, .mini-cup-container {
+            background-color: #e0e0e0;
+            border: 5px solid #8d6e63;
+            border-radius: 20px 20px 10px 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .cup-container {
+            width: 150px;
+        }
+        .mini-cup-container {
+            width: 120px;
+            height: 200px;
+        }
+        .layer {
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            line-height: 1.5;
+            transition: height 0.5s ease;
+            cursor: pointer;
+        }
+        .milk, .cream{
+            color: black;
+        }
+        .info-bubble {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 12px;
+            color: #333;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .water { background: #81c784; }
+        .ice { background: #64b5f6; }
+        .milk { background: #fff; }
+        .cream { background: #F4EFB3; }
+        .matcha { background: #388e3c; }
+        .sweetener { background: #a1887f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Matcha Latte Ratio Calculator</h1>
+        <input type="range" id="drinkSize" min="100" max="500" value="250" step="10">
+        <p>Total Drink Size: <span id="drinkSizeValue">250</span> ml/g</p>
+
+        <div class="slider-container">
+            <label class="slider-label" for="creaminessSlider">Creaminess: <span id="creaminessValue">50</span>%</label>
+            <input type="range" id="creaminessSlider" min="0" max="100" value="50" step="1">
+        </div>
+        <div class="slider-container">
+            <label class="slider-label" for="matchaTasteSlider">Matcha Taste: <span id="matchaTasteValue">50</span>%</label>
+            <input type="range" id="matchaTasteSlider" min="0" max="100" value="50" step="1">
+        </div>
+        
+        <div class="cups-wrapper">
+            <div class="cup-container" id="cupContainer">
+                <div id="layerCream" class="layer cream" data-info="Cream adds richness and texture to the latte."></div>
+                <div id="layerMilk" class="layer milk" data-info="Milk provides creaminess and blends all the flavors."></div>
+                <div id="layerIce" class="layer ice" data-info="Ice cools down the drink and balances heat."></div>
+                <div id="layerWater" class="layer water" data-info="Boiling water helps dissolve the matcha and creates the base of the latte."></div>
+            </div>
+
+            <div class="mini-cup-container" id="miniCupContainer">
+                <div id="layerSweetener" class="layer sweetener" data-info="Sweetener balances the bitterness of matcha."></div>
+                <div id="layerMiniMatcha" class="layer matcha" data-info="Matcha is finely ground green tea powder and the core flavor of the drink."></div>
+            </div>
+        </div>
+
+        <div class="info-bubble" id="infoBubble"></div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const drinkSizeSlider = document.getElementById("drinkSize");
+            const creaminessSlider = document.getElementById("creaminessSlider");
+            const matchaTasteSlider = document.getElementById("matchaTasteSlider");
+            const drinkSizeValue = document.getElementById("drinkSizeValue");
+            const creaminessValue = document.getElementById("creaminessValue");
+            const matchaTasteValue = document.getElementById("matchaTasteValue");
+            const layerWater = document.getElementById("layerWater");
+            const layerIce = document.getElementById("layerIce");
+            const layerMilk = document.getElementById("layerMilk");
+            const layerCream = document.getElementById("layerCream");
+            const layerMiniMatcha = document.getElementById("layerMiniMatcha");
+            const layerSweetener = document.getElementById("layerSweetener");
+            const cupContainer = document.getElementById("cupContainer");
+            const miniCupContainer = document.getElementById("miniCupContainer");
+            const infoBubble = document.getElementById("infoBubble");
+
+
+            function updateValues() {
+                const totalSize = parseInt(drinkSizeSlider.value);
+                const creaminessFactor = 0.4 + (parseInt(creaminessSlider.value) / 100) * 0.2; // Range from 0.4 to 0.6
+                const matchaTasteFactor = 0.4 + (parseInt(matchaTasteSlider.value) / 100) * 0.2; // Range from 0.4 to 0.6 // Range from 0.0 to 1.0
+
+                drinkSizeValue.textContent = totalSize;
+                creaminessValue.textContent = creaminessSlider.value;
+                matchaTasteValue.textContent = matchaTasteSlider.value;
+
+                // Set dynamic cup height based on tapered scaling
+                const cupHeight = Math.log(totalSize - 90) / Math.log(1.012) - 100
+                const miniCupHeight = 0.4 * cupHeight; // Increased scaling factor for visibility
+                cupContainer.style.height = cupHeight + "px";
+                miniCupContainer.style.height = miniCupHeight + "px";
+
+                // Adjust water and milk categories while keeping internal ratios
+                const waterCategory = totalSize * (1 - creaminessFactor) * 0.4;
+                const milkCategory = totalSize * creaminessFactor * 0.6;
+                const boilingWater = waterCategory * 0.6;
+                const ice = waterCategory * 0.4;
+                const matcha = (totalSize * 0.012 * matchaTasteFactor);
+                const sweetener = (totalSize * 0.012 * (1 - matchaTasteFactor));
+                const milk = milkCategory * 0.6;
+                const cream = milkCategory * 0.4;
+
+                // Normalize to ensure the cup is always filled
+                const totalLiquid = boilingWater + ice + milk + cream;
+                const waterHeight = (boilingWater / totalLiquid) * cupHeight;
+                const iceHeight = (ice / totalLiquid) * cupHeight;
+                const milkHeight = (milk / totalLiquid) * cupHeight;
+                const creamHeight = (cream / totalLiquid) * cupHeight;
+
+                // Set heights for mini cup based on matcha and sweetener proportions
+                const matchaHeight = (matcha / (matcha + sweetener)) * miniCupHeight;
+                const sweetenerHeight = (sweetener / (matcha + sweetener)) * miniCupHeight;
+
+                // Adjust matcha and sweetener in mini cup
+                layerMiniMatcha.style.height = matchaHeight + "px";
+                layerSweetener.style.height = sweetenerHeight + "px";
+                layerSweetener.style.bottom = matchaHeight + "px";
+
+                // Adjust layers in main cup
+                layerWater.style.height = waterHeight + "px";
+                layerIce.style.height = iceHeight + "px";
+                layerMilk.style.height = milkHeight + "px";
+                layerCream.style.height = creamHeight + "px";
+
+                layerWater.style.bottom = "0px";
+                layerIce.style.bottom = waterHeight + "px";
+                layerMilk.style.bottom = (waterHeight + iceHeight) + "px";
+                layerCream.style.bottom = (waterHeight + iceHeight + milkHeight) + "px";
+
+                // Display ingredient amounts
+                layerMiniMatcha.textContent = `${matcha.toFixed(1)} tbsp Matcha`;
+                layerSweetener.textContent = `${sweetener.toFixed(1)} tsp Sweetener`;
+                layerWater.textContent = `${boilingWater.toFixed(1) * 2} ml/g Water`;
+                layerIce.textContent = `${ice.toFixed(1) * 2} g Ice`;
+                layerMilk.textContent = `${milk.toFixed(1) * 2} ml/g Milk`;
+                layerCream.textContent = `${cream.toFixed(1) * 2} ml/g Cream`;
+            }
+
+            function showInfo(event) {
+                const info = event.target.getAttribute('data-info');
+                if (info) {
+                    infoBubble.textContent = info;
+                    infoBubble.style.display = 'block';
+                    infoBubble.style.top = event.clientY + 'px';
+                    infoBubble.style.left = (event.clientX + 10) + 'px';
+                }
+            }
+
+            function hideInfo() {
+                infoBubble.style.display = 'none';
+            }
+
+            // Attach event listeners to layers for hover functionality
+            [layerWater, layerIce, layerMilk, layerCream, layerMiniMatcha, layerSweetener].forEach(layer => {
+                layer.addEventListener('mousemove', showInfo);
+                layer.addEventListener('mouseleave', hideInfo);
+            });
+
+            drinkSizeSlider.addEventListener("input", updateValues);
+            creaminessSlider.addEventListener("input", updateValues);
+            matchaTasteSlider.addEventListener("input", updateValues);
+            updateValues();
+        });
+    </script>
+</body>
+</html>
